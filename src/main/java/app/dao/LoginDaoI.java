@@ -23,6 +23,9 @@ public class LoginDaoI implements LoginDao {
     @Autowired
     static private SessionFactory sessionFactory;
 
+    @Value("${jwt.auth.header}")
+    String authHeader;
+
     public LoginDaoI() {
     }
 
@@ -87,9 +90,11 @@ public class LoginDaoI implements LoginDao {
     @Override
     public String logout(HttpServletRequest request) {
 
-        /* will be implemented with the security since
-         * logout needs more security implementation */
-        return "true";
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
+        final String authHeaderVal = httpRequest.getHeader(authHeader);
+
+        return authHeaderVal;
     }
+
 
 }

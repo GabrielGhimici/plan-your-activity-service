@@ -2,7 +2,9 @@ package app.controllers;
 
 import app.dao.LoginDao;
 import app.dto.AuthDTO;
+import app.dto.ChangeDTO;
 import app.response.Login;
+import app.services.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,7 @@ public class LoginController {
     @PostMapping(value = "/service/logout")
     public ResponseEntity<?> logout (HttpServletRequest request)
     {
+        JwtFilter.logout(loginDAO.logout(request));
         return ResponseEntity.ok("OK");
     }
 
