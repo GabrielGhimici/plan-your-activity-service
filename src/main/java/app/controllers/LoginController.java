@@ -5,6 +5,7 @@ import app.dto.AuthDTO;
 import app.dto.ChangeDTO;
 import app.response.Login;
 import app.services.JwtFilter;
+import app.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +21,15 @@ public class LoginController {
     @Autowired
     private LoginDao loginDAO;
 
+    @Autowired
+    private JwtService jwtService;
+
     @PostMapping(value = "/login")
     public ResponseEntity<?> auth(@RequestBody AuthDTO auth) {
         Boolean correctCredentials = loginDAO.get(auth.getEmail(),auth.getPassword());
         if (correctCredentials) {
             Login jwtUser = new Login(auth.getEmail());
-            return ResponseEntity.ok("ok");
+            return ResponseEntity.ok(jwtService.getToken(jwtUser));
         }
         return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
     }
@@ -36,5 +40,6 @@ public class LoginController {
         JwtFilter.logout(loginDAO.logout(request));
         return ResponseEntity.ok("OK");
     }
+
 
 }
