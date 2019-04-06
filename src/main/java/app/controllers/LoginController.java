@@ -41,5 +41,12 @@ public class LoginController {
         return ResponseEntity.ok("OK");
     }
 
-
+    @PostMapping(value = "/service/firstLogin")
+    public ResponseEntity<?> firstLogging(@RequestBody ChangeDTO change, HttpServletRequest request)
+    {
+        if (loginDAO.setPassword (request,change.getPassword()))
+            return ResponseEntity.ok("OK");
+        else
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+    }
 }

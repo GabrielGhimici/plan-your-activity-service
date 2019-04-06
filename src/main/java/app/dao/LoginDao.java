@@ -11,4 +11,6 @@ public interface LoginDao {
     boolean get(String email, String pass);
 
     String logout(HttpServletRequest request);
+
+    boolean setPassword (HttpServletRequest request, String pass);
 }
