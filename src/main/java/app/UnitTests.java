@@ -8,10 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.HttpClientErrorException;
@@ -68,7 +65,7 @@ public class UnitTests {
         ResponseEntity<String> result = restTemplate.postForEntity(uri,dto,String.class);
 
         //Verify request succeed
-        Assert.assertEquals(200, result.getStatusCodeValue());
+        Assert.assertEquals(HttpStatus.OK.value(), result.getStatusCodeValue());
 
         dto.setPassword("123");
 
@@ -77,7 +74,7 @@ public class UnitTests {
             Assert.fail();
         }catch (HttpClientErrorException ex) {
             //Verify unauthorized
-            Assert.assertEquals(401, ex.getRawStatusCode());
+            Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), ex.getRawStatusCode());
         }
     }
 
@@ -97,7 +94,7 @@ public class UnitTests {
         ResponseEntity<String> result = restTemplate.postForEntity(uri,Adto,String.class);
 
         //Verify request succeed
-        Assert.assertEquals(200, result.getStatusCodeValue());
+        Assert.assertEquals(HttpStatus.OK.value(), result.getStatusCodeValue());
         String token = result.getBody().toString();
 
         byte[] array = new byte[7]; // length is bounded by 7
@@ -133,6 +130,15 @@ public class UnitTests {
         result = restTemplate.postForEntity(uri,entity,String.class);
 
         //Verify request succeed
-        Assert.assertEquals(200, result.getStatusCodeValue());
+        Assert.assertEquals(HttpStatus.OK.value(), result.getStatusCodeValue());
+
+        //This part of the test cannot be runned because of the issue #1
+        /*try {
+            result = restTemplate.postForEntity(uri, Rdto, String.class);
+            Assert.fail();
+        }catch (HttpClientErrorException ex) {
+            //Verify unauthorized
+            Assert.assertEquals(HttpStatus.BAD_REQUEST.value(), ex.getRawStatusCode());
+        }*/
     }
 }
