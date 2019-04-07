@@ -79,6 +79,52 @@ public class UnitTests {
     }
 
     @Test
+    public void testLogout() throws URISyntaxException
+    {
+        RestTemplate restTemplate = new RestTemplate();
+
+        final String loginUrl = "http://localhost:" + randomServerPort + "/login";
+        URI uri = new URI(loginUrl);
+
+        String email = "admin@gmail.com";
+        String password = "parola";
+        AuthDTO dto = new AuthDTO();
+        dto.setEmail(email);
+        dto.setPassword(password);
+
+        ResponseEntity<String> result = restTemplate.postForEntity(uri,dto,String.class);
+
+        //Verify request succeed
+        Assert.assertEquals(HttpStatus.OK.value(), result.getStatusCodeValue());
+        String token = result.getBody().toString();
+
+
+        final String logoutUrl = "http://localhost:" + randomServerPort + "/service/logout";
+        uri = new URI(logoutUrl);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", token);
+
+        HttpEntity<RegisterDTO> entity = new HttpEntity<RegisterDTO>(null, headers);
+
+        result = restTemplate.postForEntity(uri,entity,String.class);
+
+        //Verify request succeed
+        Assert.assertEquals(HttpStatus.OK.value(), result.getStatusCodeValue());
+
+        try {
+            result = restTemplate.postForEntity(uri, entity, String.class);
+            Assert.fail();
+        }catch (HttpClientErrorException ex) {
+            //Verify unauthorized
+            Assert.assertEquals(HttpStatus.UNAUTHORIZED.value(), ex.getRawStatusCode());
+        }
+
+    }
+
+    @Test
     public void testRegister() throws URISyntaxException
     {
         RestTemplate restTemplate = new RestTemplate();
