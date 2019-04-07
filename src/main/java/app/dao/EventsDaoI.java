@@ -1,6 +1,7 @@
 package app.dao;
 
 import app.dto.EventDTO;
+import app.dto.EventUpdateDTO;
 import app.model.Attendants;
 import app.model.Events;
 import app.model.Teams;
@@ -160,6 +161,63 @@ public class EventsDaoI implements EventsDao {
         catch(Exception e) {
             return null;
         }
+    }
+
+    @Override
+    public EventsPOJO updateEvent(EventUpdateDTO event)
+    {
+
+        String hql = "from Events where id = '" + event.getId() + "'";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Events> list = (List<Events>) query.list();
+
+            if (list != null && !list.isEmpty()) {
+
+                SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                list.get(0).setDescription(event.getDescription());
+                list.get(0).setCdate(ft.parse(event.getStart_date() + " " + event.getStart_time()));
+                list.get(0).setFdate(ft.parse(event.getFinish_date() + " " + event.getFinish_time()));
+
+                if (list.get(0).getFdate().after(list.get(0).getCdate()))
+                {
+                    Date d = new Date();
+
+                    if(list.get(0).getCdate().compareTo(list.get(0).getCdate()) == 0 || list.get(0).getCdate().after(d))
+                    {
+
+                        sessionFactory.getCurrentSession().update(list.get(0));
+
+                        EventsPOJO ev = new EventsPOJO();
+                        ev.setId(list.get(0).getId());
+                        ev.setDescription(list.get(0).getDescription());
+                        ev.setStart_time(event.getStart_time());
+                        ev.setFinish_time(event.getFinish_time());
+                        ev.setStart_date(event.getStart_date());
+                        ev.setFinish_date(event.getFinish_date());
+
+                        return ev;
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }catch (Exception e)
+        {
+            return null;
+        }
+
+        return null;
     }
 
 }

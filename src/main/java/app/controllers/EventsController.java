@@ -2,6 +2,7 @@ package app.controllers;
 
 import app.dao.EventsDao;
 import app.dto.EventDTO;
+import app.dto.EventUpdateDTO;
 import app.response.EventsPOJO;
 import app.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,4 +35,16 @@ public class EventsController {
         }
     }
 
+    @PutMapping(value = "/service/updateEvent")
+    public ResponseEntity<?> updateEvents (@RequestBody EventUpdateDTO event)
+    {
+        EventsPOJO e = EventsDAO.updateEvent(event);
+        if(e != null) {
+
+            return ResponseEntity.ok(e);
+        }
+        else {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
