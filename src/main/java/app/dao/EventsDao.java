@@ -3,6 +3,7 @@ package app.dao;
 import app.dto.EventDTO;
 import app.dto.EventUpdateDTO;
 import app.response.EventsPOJO;
+import app.response.Invitations;
 import app.response.UserPOJO;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,4 +17,6 @@ public interface EventsDao {
     EventsPOJO updateEvent(EventUpdateDTO event);
 
     boolean deleteEvent(EventUpdateDTO event, HttpServletRequest request);
+
+    Invitations[] getInvitations(HttpServletRequest request);
 }

@@ -7,6 +7,7 @@ import app.model.Events;
 import app.model.Teams;
 import app.model.Users;
 import app.response.EventsPOJO;
+import app.response.Invitations;
 import app.response.Login;
 import app.response.UserPOJO;
 import app.services.JwtService;
@@ -315,6 +316,111 @@ public class EventsDaoI implements EventsDao {
         {
             return false;
         }
+    }
+
+    @Override
+    public Invitations[] getInvitations(HttpServletRequest request){
+
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
+        final String authHeaderVal = httpRequest.getHeader(authHeader);
+        Login jwtUser = jwtTokenService.getUser(authHeaderVal);
+
+        String hql = "from Users where email = '" + jwtUser.getUserName() + "'";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Users> list = (List<Users>) query.list();
+
+            if (list != null && !list.isEmpty()) {
+
+                hql = "from Attendants where invited_user = '" + list.get(0).getId() + "' and answer = '0'";
+                try {
+
+                    query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                    @SuppressWarnings("unchecked")
+                    List<Attendants> list2 = (List<Attendants>) query.list();
+
+                    if (list2 != null && !list2.isEmpty()) {
+
+                        Invitations[] vect = new Invitations[list2.size()];
+
+                        for (int i = 0; i < list2.size(); i++) {
+                            hql = "from Events where id = '" + list2.get(i).getEvent() + "'";
+                            try {
+
+                                query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                                @SuppressWarnings("unchecked")
+                                List<Events> list3 = (List<Events>) query.list();
+
+                                if (list3 != null && !list3.isEmpty()) {
+
+                                    Invitations inv = new Invitations();
+                                    inv.setId(list2.get(i).getId());
+
+                                    SimpleDateFormat time = new SimpleDateFormat("HH:mm:ss");
+                                    SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+
+                                    EventsPOJO e = new EventsPOJO();
+
+                                    e.setDescription(list3.get(0).getDescription());
+                                    e.setId(list3.get(0).getId());
+
+                                    Date aux = list3.get(0).getCdate();
+                                    e.setStart_date(day.format(aux));
+                                    e.setStart_time(time.format(aux));
+
+                                    aux = list3.get(0).getFdate();
+                                    e.setFinish_date(day.format(aux));
+                                    e.setFinish_time(time.format(aux));
+
+                                    inv.setEvent(e);
+
+                                    hql = "from Users where id = '" + list3.get(0).getCreator() + "'";
+                                    query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                                    @SuppressWarnings("unchecked")
+                                    List<Users> listU = (List<Users>) query.list();
+
+                                    if (listU != null && !listU.isEmpty()) {
+
+                                        inv.setCreator(listU.get(0).getName());
+
+                                    }
+                                    else
+                                    {
+                                        return null;
+                                    }
+
+                                    vect[i] = inv;
+                                }
+                                else
+                                {
+                                    return null;
+                                }
+
+                            } catch (Exception e) {
+                                return null;
+                            }
+
+                        }
+
+                        return vect;
+                    }
+
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }catch (Exception e)
+        {
+            return null;
+        }
+
+        return null;
+
     }
 }
 
