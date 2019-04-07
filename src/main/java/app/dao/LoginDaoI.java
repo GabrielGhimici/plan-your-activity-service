@@ -2,7 +2,9 @@ package app.dao;
 
 import app.dto.RegisterDTO;
 import app.model.Assignment;
+import app.model.Teams;
 import app.model.Users;
+import app.response.Details;
 import app.response.Login;
 import app.services.JwtService;
 import org.hibernate.Query;
@@ -20,6 +22,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Set;
 
@@ -280,4 +283,61 @@ public class LoginDaoI implements LoginDao {
         }
     }
 
+    @Override
+    public Details getDetails(HttpServletRequest request) {
+
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
+        final String authHeaderVal = httpRequest.getHeader(authHeader);
+        Login jwtUser = jwtTokenService.getUser(authHeaderVal);
+        Users u = null;
+        String hql = "from Users where email='";
+        hql += jwtUser.getUserName() + "'";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Users> list = (List<Users>) query.list();
+
+            if (list != null && !list.isEmpty()) {
+                u = list.get(0);
+            }
+        }
+        catch(Exception e) {
+            return null;
+        }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+        Details d = new Details();
+        d.setBorn(formatter.format(u.getBorn()));
+        d.setEmail(u.getEmail());
+        d.setPermanentAccount(u.isValidate());
+        d.setName(u.getName());
+
+
+        Teams t = null;
+        hql = "from Teams where id='";
+        hql += u.getTeam() + "'";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Teams> list = (List<Teams>) query.list();
+
+            if (list != null && !list.isEmpty()) {
+                t = list.get(0);
+            }
+        }
+        catch(Exception e) {
+            return null;
+        }
+
+        d.getTeam().setId(t.getId());
+        d.getTeam().setName(t.getName());
+        if(u.getId() == t.getLeader())
+            d.getTeam().setLeader(true);
+
+        return d;
+
+    }
 }

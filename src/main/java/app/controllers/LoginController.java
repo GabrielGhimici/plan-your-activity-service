@@ -4,12 +4,14 @@ import app.dao.LoginDao;
 import app.dto.AuthDTO;
 import app.dto.ChangeDTO;
 import app.dto.RegisterDTO;
+import app.response.Details;
 import app.response.Login;
 import app.services.JwtFilter;
 import app.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,6 +58,18 @@ public class LoginController {
     {
         if (loginDAO.set(user,request))
             return ResponseEntity.ok("OK");
+        else
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping(value = "/service/details")
+    public ResponseEntity<?> getdescription (HttpServletRequest request)
+    {
+        Details d = loginDAO.getDetails(request);
+        if (d != null)
+        {
+            return ResponseEntity.ok(d);
+        }
         else
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
