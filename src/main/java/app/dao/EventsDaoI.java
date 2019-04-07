@@ -220,5 +220,101 @@ public class EventsDaoI implements EventsDao {
         return null;
     }
 
+    @Override
+    public boolean deleteEvent(EventUpdateDTO event, HttpServletRequest request)
+    {
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
+        final String authHeaderVal = httpRequest.getHeader(authHeader);
+        Login jwtUser = jwtTokenService.getUser(authHeaderVal);
+
+        boolean creator = false;
+        Users u = null;
+
+        String hql = "from Users where email = '" + jwtUser.getUserName() + "'";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Users> list = (List<Users>) query.list();
+
+            if (list != null && !list.isEmpty()) {
+
+                u = list.get(0);
+
+                hql = "from Events where id = '" + event.getId() + "' and creator = '" + list.get(0).getId() + "'";
+                try {
+                    query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                    @SuppressWarnings("unchecked")
+                    List<Events> list2 = (List<Events>) query.list();
+
+                    if (list2 != null && !list2.isEmpty()) {
+                        creator = true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    return false;
+                }
+
+            }
+        }catch (Exception e)
+        {
+            return false;
+        }
+
+        if(creator == true)
+            hql = "from Attendants where event = '" + event.getId() + "'";
+        else
+            hql = "from Attendants where event = '" + event.getId() + "' and invited_user= '" + u.getId() + "'";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Attendants> list = (List<Attendants>) query.list();
+
+            if (list != null && !list.isEmpty()) {
+
+                for (int i = 0; i < list.size(); i++) {
+
+                    try {
+                        sessionFactory.getCurrentSession().delete(list.get(i));
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }
+            }
+
+            if(creator == true) {
+
+                hql = "from Events where id = '" + event.getId() + "'";
+                try {
+                    query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                    @SuppressWarnings("unchecked")
+                    List<Events> list2 = (List<Events>) query.list();
+
+                    if (list2 != null && !list2.isEmpty()) {
+
+                        try {
+                            sessionFactory.getCurrentSession().delete(list2.get(0));
+                        } catch (Exception e) {
+                            return false;
+                        }
+
+                    }
+                } catch (Exception e) {
+                    return false;
+                }
+
+            }
+
+            return true;
+
+        }catch (Exception e)
+        {
+            return false;
+        }
+    }
 }
 

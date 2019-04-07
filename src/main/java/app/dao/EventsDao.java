@@ -15,4 +15,5 @@ public interface EventsDao {
 
     EventsPOJO updateEvent(EventUpdateDTO event);
 
+    boolean deleteEvent(EventUpdateDTO event, HttpServletRequest request);
 }

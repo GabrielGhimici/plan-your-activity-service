@@ -47,4 +47,16 @@ public class EventsController {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PutMapping(value = "/service/deleteEvent")
+    public ResponseEntity<?> deleteEvents (@RequestBody EventUpdateDTO event, HttpServletRequest request)
+    {
+        if(EventsDAO.deleteEvent(event, request)) {
+
+            return ResponseEntity.ok("OK");
+        }
+        else {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
