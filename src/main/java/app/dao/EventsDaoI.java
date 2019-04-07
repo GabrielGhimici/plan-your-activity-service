@@ -2,6 +2,7 @@ package app.dao;
 
 import app.dto.EventDTO;
 import app.dto.EventUpdateDTO;
+import app.dto.InvitationDTO;
 import app.model.Attendants;
 import app.model.Events;
 import app.model.Teams;
@@ -421,6 +422,28 @@ public class EventsDaoI implements EventsDao {
 
         return null;
 
+    }
+
+    @Override
+    public boolean respond(InvitationDTO inv){
+
+        String hql = "from Attendants where id = '" + inv.getId() + "'";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Attendants> list = (List<Attendants>) query.list();
+
+            list.get(0).setAnswer(inv.getResponse());
+
+            sessionFactory.getCurrentSession().update(list.get(0));
+
+            return true;
+
+        }catch (Exception e)
+        {
+            return false;
+        }
     }
 }
 

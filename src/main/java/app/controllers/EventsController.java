@@ -3,6 +3,7 @@ package app.controllers;
 import app.dao.EventsDao;
 import app.dto.EventDTO;
 import app.dto.EventUpdateDTO;
+import app.dto.InvitationDTO;
 import app.response.EventsPOJO;
 import app.response.Invitations;
 import app.services.JwtService;
@@ -73,5 +74,16 @@ public class EventsController {
         maping.put("invitations",  jo);
 
         return ResponseEntity.ok(maping);
+    }
+
+    @PutMapping(value = "/service/respond")
+    public ResponseEntity<?> showInvitations (@RequestBody InvitationDTO inv)
+    {
+        if(EventsDAO.respond(inv)) {
+            return ResponseEntity.ok("OK");
+        }
+        else {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 }
