@@ -3,6 +3,7 @@ package app.controllers;
 import app.dao.LoginDao;
 import app.dto.AuthDTO;
 import app.dto.ChangeDTO;
+import app.dto.RegisterDTO;
 import app.response.Login;
 import app.services.JwtFilter;
 import app.services.JwtService;
@@ -45,6 +46,15 @@ public class LoginController {
     public ResponseEntity<?> firstLogging(@RequestBody ChangeDTO change, HttpServletRequest request)
     {
         if (loginDAO.setPassword (request,change.getPassword()))
+            return ResponseEntity.ok("OK");
+        else
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping(value = "/service/register")
+    public ResponseEntity<?> registerUser(@RequestBody RegisterDTO user, HttpServletRequest request)
+    {
+        if (loginDAO.set(user,request))
             return ResponseEntity.ok("OK");
         else
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);

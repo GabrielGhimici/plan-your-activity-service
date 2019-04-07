@@ -1,5 +1,6 @@
 package app.dao;
 
+import app.dto.RegisterDTO;
 import app.model.Assignment;
 import app.model.Users;
 import app.response.Login;
@@ -15,7 +16,12 @@ import app.model.Password;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @Transactional
@@ -206,5 +212,72 @@ public class LoginDaoI implements LoginDao {
     }
 
 
+    public boolean set(RegisterDTO user, HttpServletRequest request)
+    {
+        try {
+            String hql = "select id from Password where hash='" + user.getPassword() + "'";
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+            @SuppressWarnings("unchecked")
+            List<Long> list = (List<Long>) query.list();
+
+            Password p = new Password();
+            p.setPassword(user.getPassword());
+
+            if (list == null || list.isEmpty()) {
+                hql = "select MAX(id) from Password";
+                query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                list = (List<Long>) query.list();
+
+                p.setId(list.get(0) + 1);
+
+                sessionFactory.getCurrentSession().save(p);
+
+            }
+            else
+            {
+                p.setId(list.get(0));
+            }
+
+            hql = "select MAX(id) from Users";
+            query = sessionFactory.getCurrentSession().createQuery(hql);
+            @SuppressWarnings("unchecked")
+            List<Long> list2 = (List<Long>) query.list();
+
+            Users u = new Users();
+            u.setId(list2.get(0)+1);
+            u.setValidate(false);
+            u.setBorn(user.getBorn());
+            u.setEmail(user.getEmail());
+            u.setName(user.getName());
+
+            final HttpServletRequest httpRequest = (HttpServletRequest) request;
+            final String authHeaderVal = httpRequest.getHeader(authHeader);
+            Login jwtUser = jwtTokenService.getUser(authHeaderVal);
+
+            hql = "select team from Users where email='";
+            hql += jwtUser.getUserName() + "'";
+            query = sessionFactory.getCurrentSession().createQuery(hql);
+            @SuppressWarnings("unchecked")
+            List<Long> list3 = (List<Long>) query.list();
+
+            u.setTeam(list3.get(0));
+
+            sessionFactory.getCurrentSession().save(u);
+
+            Assignment a = new Assignment();
+            a.setUser(u.getId());
+            a.setPassword(p.getId());
+
+            sessionFactory.getCurrentSession().save(a);
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            sessionFactory.getCurrentSession().getTransaction().rollback();
+            return false;
+        }
+    }
 
 }
