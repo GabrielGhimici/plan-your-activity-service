@@ -7,10 +7,7 @@ import app.model.Attendants;
 import app.model.Events;
 import app.model.Teams;
 import app.model.Users;
-import app.response.EventsPOJO;
-import app.response.Invitations;
-import app.response.Login;
-import app.response.UserPOJO;
+import app.response.*;
 import app.services.JwtService;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -444,6 +441,41 @@ public class EventsDaoI implements EventsDao {
         {
             return false;
         }
+    }
+
+    @Override
+    public TeamPOJO[] getTeams()
+    {
+
+        String hql = "from Teams";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Teams> list = (List<Teams>) query.list();
+
+            if (list != null && !list.isEmpty()) {
+
+                TeamPOJO[] vect = new TeamPOJO[list.size()];
+
+                for(int i=0 ;i < list.size(); i++) {
+
+                    TeamPOJO t = new TeamPOJO();
+                    t.setId(list.get(i).getId());
+                    t.setName(list.get(i).getName());
+                    vect[i]= t;
+
+                }
+
+                return vect;
+            }
+
+            return null;
+        }
+        catch(Exception e) {
+            return null;
+        }
+
     }
 }
 

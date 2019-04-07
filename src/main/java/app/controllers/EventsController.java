@@ -6,6 +6,7 @@ import app.dto.EventUpdateDTO;
 import app.dto.InvitationDTO;
 import app.response.EventsPOJO;
 import app.response.Invitations;
+import app.response.TeamPOJO;
 import app.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -85,5 +86,16 @@ public class EventsController {
         else {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping(value = "/service/teams")
+    public ResponseEntity<?> listOfTeams ()
+    {
+        TeamPOJO[] jo = EventsDAO.getTeams();
+
+        Map maping = new HashMap<String,String>();
+        maping.put("teams",  jo);
+
+        return ResponseEntity.ok(maping);
     }
 }

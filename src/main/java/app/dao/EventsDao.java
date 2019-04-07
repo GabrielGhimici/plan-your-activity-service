@@ -5,6 +5,7 @@ import app.dto.EventUpdateDTO;
 import app.dto.InvitationDTO;
 import app.response.EventsPOJO;
 import app.response.Invitations;
+import app.response.TeamPOJO;
 import app.response.UserPOJO;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,4 +23,6 @@ public interface EventsDao {
     Invitations[] getInvitations(HttpServletRequest request);
 
     boolean respond(InvitationDTO inv);
+
+    TeamPOJO[] getTeams();
 }
