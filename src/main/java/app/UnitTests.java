@@ -2,7 +2,9 @@ package app;
 
 import app.dao.LoginDaoI;
 import app.dto.AuthDTO;
+import app.dto.EventDTO;
 import app.dto.RegisterDTO;
+import app.response.AttendantPOJO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,9 +19,11 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
@@ -107,7 +111,7 @@ public class UnitTests {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", token);
 
-        HttpEntity<RegisterDTO> entity = new HttpEntity<RegisterDTO>(null, headers);
+        HttpEntity<String> entity = new HttpEntity<String>(null, headers);
 
         result = restTemplate.postForEntity(uri,entity,String.class);
 
@@ -186,5 +190,90 @@ public class UnitTests {
             //Verify unauthorized
             Assert.assertEquals(HttpStatus.BAD_REQUEST.value(), ex.getRawStatusCode());
         }*/
+    }
+
+    @Test
+    public void testEventCreation() throws URISyntaxException
+    {
+        RestTemplate restTemplate = new RestTemplate();
+
+        final String loginUrl = "http://localhost:" + randomServerPort + "/login";
+        URI uri = new URI(loginUrl);
+
+        String email = "admin@gmail.com";
+        String password = "parola";
+        AuthDTO dto = new AuthDTO();
+        dto.setEmail(email);
+        dto.setPassword(password);
+
+        ResponseEntity<String> result = restTemplate.postForEntity(uri,dto,String.class);
+
+        //Verify request succeed
+        Assert.assertEquals(HttpStatus.OK.value(), result.getStatusCodeValue());
+        String token = result.getBody().toString();
+
+        final String logoutUrl = "http://localhost:" + randomServerPort + "/service/addEvent";
+        uri = new URI(logoutUrl);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", token);
+
+        EventDTO event = new EventDTO();
+        event.setDescription("Unit test");
+
+        Calendar calendar = Calendar.getInstance();
+        Date date = calendar.getTime();
+        DateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd");
+        DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+
+
+        calendar.setTime(date);
+        calendar.add(Calendar.HOUR_OF_DAY, 1);
+        date = calendar.getTime();
+        String strDate = dateFormat.format(date);
+        String strTime = timeFormat.format(date);
+        event.setStart_date(strDate);
+        event.setStart_time(strTime);
+
+        calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.HOUR_OF_DAY, 2);
+        date = calendar.getTime();
+        strDate = dateFormat.format(date);
+        strTime = timeFormat.format(date);
+        event.setFinish_date(strDate);
+        event.setFinish_time(strTime);
+
+        /* No attendants list for now. Will be implemented in the future */
+        event.setAttendants(new AttendantPOJO[0]);
+
+        HttpEntity<EventDTO> entity = new HttpEntity<EventDTO>(event, headers);
+
+        result = restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
+
+        //Verify request succeed
+        Assert.assertEquals(HttpStatus.OK.value(), result.getStatusCodeValue());
+
+
+        calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.HOUR_OF_DAY, -4);
+        date = calendar.getTime();
+        strDate = dateFormat.format(date);
+        strTime = timeFormat.format(date);
+        event.setFinish_date(strDate);
+        event.setFinish_time(strTime);
+
+        entity = new HttpEntity<EventDTO>(event, headers);
+
+        try {
+            result = restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
+            Assert.fail();
+        }catch (HttpClientErrorException ex) {
+            //Verify unauthorized
+            Assert.assertEquals(HttpStatus.BAD_REQUEST.value(), ex.getRawStatusCode());
+        }
     }
 }
