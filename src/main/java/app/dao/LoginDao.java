@@ -19,4 +19,6 @@ public interface LoginDao {
     boolean set(RegisterDTO user, HttpServletRequest request);
 
     Details getDetails (HttpServletRequest request);
+
+    Details setDetails (Details user, HttpServletRequest request);
 }

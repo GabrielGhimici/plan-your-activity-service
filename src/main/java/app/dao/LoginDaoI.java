@@ -340,4 +340,37 @@ public class LoginDaoI implements LoginDao {
         return d;
 
     }
+
+    @Override
+    public Details setDetails (Details user, HttpServletRequest request)
+    {
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
+        final String authHeaderVal = httpRequest.getHeader(authHeader);
+        Login jwtUser = jwtTokenService.getUser(authHeaderVal);
+
+        Users u = null;
+        String hql = "from Users where email='";
+        hql += jwtUser.getUserName() + "'";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Users> list = (List<Users>) query.list();
+
+            if (list != null && !list.isEmpty()) {
+                u = list.get(0);
+                hql = "update Users set name='" + user.getName() + "', email = '" + user.getEmail() + "', born = '" + user.getBorn()
+                        + "' where id='" + u.getId() + "'";
+                query = sessionFactory.getCurrentSession().createQuery(hql);
+                query.executeUpdate();
+
+                return user;
+            }
+        }
+        catch(Exception e) {
+            return null;
+        }
+
+        return null;
+    }
 }

@@ -73,4 +73,16 @@ public class LoginController {
         else
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
+
+    @PostMapping(value = "/service/updateUser")
+    public ResponseEntity<?> setdescription (@RequestBody Details user, HttpServletRequest request)
+    {
+        Details d = loginDAO.setDetails(user, request);
+        if (d != null)
+        {
+            return ResponseEntity.ok(d);
+        }
+        else
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+    }
 }
