@@ -1,5 +1,6 @@
 package app.dao;
 
+import app.dto.AttendDTO;
 import app.dto.EventDTO;
 import app.dto.EventUpdateDTO;
 import app.dto.InvitationDTO;
@@ -475,6 +476,170 @@ public class EventsDaoI implements EventsDao {
         catch(Exception e) {
             return null;
         }
+
+    }
+
+    @Override
+    public EventsDetailedPOJO[] getEvents(HttpServletRequest request){
+
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
+        final String authHeaderVal = httpRequest.getHeader(authHeader);
+        Login jwtUser = jwtTokenService.getUser(authHeaderVal);
+
+        String hql = "from Users where email = '" + jwtUser.getUserName() + "'";
+        try {
+            Query query = sessionFactory.getCurrentSession().createQuery(hql);
+
+            @SuppressWarnings("unchecked")
+            List<Users> list = (List<Users>) query.list();
+
+            if (list != null && !list.isEmpty()) {
+
+                hql = "from Events where creator = '" + list.get(0).getId() + "' ";
+                try {
+                    query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                    @SuppressWarnings("unchecked")
+                    List<Events> list2 = (List<Events>) query.list();
+
+                    try{
+
+                        hql = "from Attendants where invited_user = '" + list.get(0).getId() + "' ";
+
+                        query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                        @SuppressWarnings("unchecked")
+                        List<Attendants> list3 = (List<Attendants>) query.list();
+
+                        try {
+
+                            for(int i=0; i<list3.size(); i++) {
+
+                                if(list3.get(i).getAnswer()==1) {
+
+                                    hql = "from Events where id = '" + list3.get(i).getEvent() + "' ";
+
+                                    query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                                    @SuppressWarnings("unchecked")
+                                    List<Events> list4 = (List<Events>) query.list();
+
+                                    for (int j = 0; j < list4.size(); j++) {
+                                        list2.add(list4.get(j));
+                                    }
+                                }
+                            }
+
+                        }catch (Exception e)
+                        {
+                            return null;
+                        }
+
+                    }catch (Exception e)
+                    {
+                        return null;
+                    }
+
+                    if (list2 != null && !list2.isEmpty()) {
+
+                        EventsDetailedPOJO[] vect = new EventsDetailedPOJO[list2.size()];
+
+                        SimpleDateFormat time = new SimpleDateFormat("HH:mm:ss");
+                        SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+
+                        for(int i = 0; i < list2.size(); i++)
+                        {
+                            EventsDetailedPOJO e = new EventsDetailedPOJO();
+
+                            e.setDescription(list2.get(i).getDescription());
+                            e.setId(list2.get(i).getId());
+
+                            hql = "from Users where id = '" + list2.get(i).getCreator() + "'";
+                            query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                            @SuppressWarnings("unchecked")
+                            List<Users> listU = (List<Users>) query.list();
+
+                            if (listU != null && !listU.isEmpty()) {
+
+                                e.setCreator(listU.get(0).getName());
+
+                            }
+                            else
+                            {
+                                return null;
+                            }
+
+                            Date aux = list2.get(i).getCdate();
+                            e.setStart_date(day.format(aux));
+                            e.setStart_time(time.format(aux));
+
+                            aux = list2.get(i).getFdate();
+                            e.setFinish_date(day.format(aux));
+                            e.setFinish_time(time.format(aux));
+
+                            try{
+                                hql = "from Attendants where event = '" + e.getId() + "' and answer = '1'";
+
+                                query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                                @SuppressWarnings("unchecked")
+                                List<Attendants> list4 = (List<Attendants>) query.list();
+
+                                if(list4 != null && !list4.isEmpty()) {
+                                    AttendDTO[] vectA = new AttendDTO[list4.size()];
+
+                                    for(int j=0; j<list4.size(); j++)
+                                    {
+                                        AttendDTO att = new AttendDTO();
+                                        att.setId(list4.get(j).getInvited_user());
+
+                                        try {
+
+                                            hql = "from Users where id = '" + att.getId() + "'";
+
+                                            query = sessionFactory.getCurrentSession().createQuery(hql);
+
+                                            @SuppressWarnings("unchecked")
+                                            List<Users> list5 = (List<Users>) query.list();
+
+                                            if(list5 != null && !list5.isEmpty()) {
+                                                att.setName(list5.get(0).getName());
+                                            }
+                                        }catch (Exception err)
+                                        {
+                                            return null;
+                                        }
+
+                                        vectA[j] = att;
+                                    }
+
+                                    e.getAttendants().put("attendants",vectA);
+
+                                }
+                            }catch (Exception errno)
+                            {
+                                return null;
+                            }
+
+                            vect[i] = e;
+                        }
+
+                        return vect;
+
+                    }
+                } catch (Exception e)
+                {
+                    return null;
+                }
+
+            }
+        }catch (Exception e)
+        {
+            return null;
+        }
+
+        return null;
 
     }
 }

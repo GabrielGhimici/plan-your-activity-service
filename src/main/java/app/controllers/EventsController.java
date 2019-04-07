@@ -4,10 +4,7 @@ import app.dao.EventsDao;
 import app.dto.EventDTO;
 import app.dto.EventUpdateDTO;
 import app.dto.InvitationDTO;
-import app.response.EventsPOJO;
-import app.response.Invitations;
-import app.response.TeamPOJO;
-import app.response.UserPOJO;
+import app.response.*;
 import app.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -104,6 +101,17 @@ public class EventsController {
 
         Map maping = new HashMap<String,String>();
         maping.put("users",  jo);
+
+        return ResponseEntity.ok(maping);
+    }
+
+    @GetMapping(value = "/service/events")
+    public ResponseEntity<?> listOfEvents (HttpServletRequest request)
+    {
+        EventsDetailedPOJO[] jo = EventsDAO.getEvents(request);
+
+        Map maping = new HashMap<String,String>();
+        maping.put("events",  jo);
 
         return ResponseEntity.ok(maping);
     }

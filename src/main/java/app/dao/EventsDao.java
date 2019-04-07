@@ -3,10 +3,7 @@ package app.dao;
 import app.dto.EventDTO;
 import app.dto.EventUpdateDTO;
 import app.dto.InvitationDTO;
-import app.response.EventsPOJO;
-import app.response.Invitations;
-import app.response.TeamPOJO;
-import app.response.UserPOJO;
+import app.response.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,4 +22,6 @@ public interface EventsDao {
     boolean respond(InvitationDTO inv);
 
     TeamPOJO[] getTeams();
+
+    EventsDetailedPOJO[] getEvents(HttpServletRequest request);
 }
